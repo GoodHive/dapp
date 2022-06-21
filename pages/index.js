@@ -1,6 +1,7 @@
 import Head from 'next/head' // TODO: add Head
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import Blockies from 'react-blockies'
 import { Disclosure } from '@headlessui/react'
 import { MenuIcon, XIcon, LocationMarkerIcon, CurrencyDollarIcon } from '@heroicons/react/outline'
@@ -28,36 +29,10 @@ const countries = [
   'Finlande'
 ]
 
-const people = [
-  {
-    address: '0x580B9ca15035B8C99bda7B959EAB185b40b19704',
-    name: 'Joh Doe',
-    title: 'Solidity Developer',
-    skills: ['Solidity', 'JavaScript', 'Python', 'C++', 'C#'],
-    email: 'janecooper@example.com',
-    telephone: '+1-202-555-0170',
-    imageUrl:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
-    city: 'Paris',
-    rate: '500'
-  },
-  {
-    address: '0x6AEC6f737e847279428cfDff652d9CF9a7f589c7',
-    name: 'Marie Claire',
-    title: 'Web3 Developer',
-    skills: ['Solidity', 'Ethers'],
-    email: 'janecooper@example.com',
-    telephone: '+1-202-555-0170',
-    imageUrl:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
-    city: 'Berlin',
-    rate: '750'
-  },
-  // More people...
-]
-
 export default function Home() {
   const [inputItems, setInputItems] = useState(countries)
+  const [workers, setWorkers] = useState([])
+
   const {
     isOpen,
     getLabelProps,
@@ -81,6 +56,14 @@ export default function Home() {
     connectedAddress,
     connectWallet
   } = useWeb3()
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await axios.get('/api/talents')
+
+      setWorkers(data)
+    })()
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -226,27 +209,27 @@ export default function Home() {
       <section>
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex">
           <ul role="list" className="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {people.map((person) => (
+          {workers.map((worker) => (
             <li
-              key={person.email}
+              key={worker.email}
               className="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200"
             >
               <div className="flex-1 flex flex-col p-8">
-                {/* <img className="wn-32 h-32 flex-shrink-0 mx-auto rounded-full" src={person.imageUrl} alt="" /> */}
+                {/* <img className="wn-32 h-32 flex-shrink-0 mx-auto rounded-full" src={worker.imageUrl} alt="" /> */}
                 <Blockies
                   className="w-32 h-32 flex-shrink-0 mx-auto rounded-full"
-                  seed={person.address}
+                  seed={worker.wallet_address}
                   size={12}
                   scale={8}
                 />
-                <h3 className="mt-6 text-gray-900 text-sm font-medium">{person.name}</h3>
+                <h3 className="mt-6 text-gray-900 text-sm font-medium">{worker.firstname}</h3>
                 <dl className="mt-1 flex-grow flex flex-col justify-between">
                   <dt className="sr-only">Title</dt>
-                  <dd className="text-gray-500 text-sm">{person.title}</dd>
+                  <dd className="text-gray-500 text-sm">{worker.profile_headline}</dd>
                   <dt className="sr-only">Skills</dt>
                   <dd className="mt-3">
                     {
-                      person.skills.map((skill, index) => (
+                      worker.skills.map((skill, index) => (
                         <span key={index} className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium leading-5 bg-blue-100 text-blue-800 m-0.5">
                           {skill}
                         </span>
@@ -262,7 +245,7 @@ export default function Home() {
                       className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
                     >
                       <CurrencyDollarIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      <span className="ml-3">{person.rate}</span>
+                      <span className="ml-3">{worker.rate}</span>
                     </span>
                   </div>
                   <div className="-ml-px w-0 flex-1 flex">
@@ -270,7 +253,7 @@ export default function Home() {
                       className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
                     >
                       <LocationMarkerIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      <span className="ml-3">{person.city}</span>
+                      <span className="ml-3">{worker.city}</span>
                     </span>
                   </div>
                 </div>

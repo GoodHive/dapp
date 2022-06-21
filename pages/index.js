@@ -1,6 +1,6 @@
 import Head from 'next/head' // TODO: add Head
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import Blockies from 'react-blockies'
 import { Disclosure } from '@headlessui/react'
@@ -32,6 +32,8 @@ const countries = [
 export default function Home() {
   const [inputItems, setInputItems] = useState(countries)
   const [workers, setWorkers] = useState([])
+  const [skills, setSkills] = useState([])
+  const [location, setLocation] = useState('')
 
   const {
     isOpen,
@@ -61,9 +63,17 @@ export default function Home() {
     (async () => {
       const { data } = await axios.get('/api/talents')
 
-      setWorkers(data)
+      if(data.length) setWorkers(data)
     })()
   }, [])
+
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault()
+
+    const { data } = await axios.get(`/api/talents${ (skills || location) ? `?${skills ? `skills=${skills}` : ''}${location ? `&location=${location}` : ''}` : '' }`)
+console.log(`/api/talents${ (skills || location) ? `?${skills ? `skills=${skills}` : ''}${location ? `&location=${location}` : ''}` : '' }`)
+    setWorkers(data)
+  })
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -147,122 +157,135 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex-1 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <main>
-          <div className="flex flex-col">
-            <div className="flex flex-row">
-              <div className="">
-                <label htmlFor="skill" className="leading-10 inline-block w-20">
-                  Skill
-                </label>
-              </div>
-              <div>
-                <input id="skill" placeholder="Try Solidity, Rust, EthersJs..." className="w-[30vw] ml-3 p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md" />
-              </div>
+      <main className="flex flex-col flex-1 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 items-center">
+        <div className="flex flex-col w-fit">
+          <div className="flex flex-row">
+            <div className="">
+              <label htmlFor="skill" className="leading-10 inline-block w-20">
+                Skill
+              </label>
             </div>
+            <div>
+              <input
+                id="skill"
+                placeholder="Try Solidity, Rust, EthersJs..."
+                className="w-[30vw] ml-3 p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setSkills(e.target.value)}
+              />
+            </div>
+          </div>
 
-            <div className="flex flex-row mt-5">
-              <div { ...getComboboxProps() }>
-                <label {...getLabelProps()} className="leading-10 inline-block w-20">
-                  Location
-                </label>
+          <div className="flex flex-row mt-5">
+            <div { ...getComboboxProps() }>
+              <label {...getLabelProps()} className="leading-10 inline-block w-20">
+                Location
+              </label>
+            </div>
+            <div className="relative">
+              <div className="absolute">
+                <input
+                  {...getInputProps()} 
+                  placeholder="France, London, New York..."
+                  className="w-[30vw] ml-3 p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                />
+                <ul {...getMenuProps()} style={menuStyles}>
+                  {isOpen &&
+                    inputItems.map((item, index) => (
+                      <li
+                        style={
+                          highlightedIndex === index
+                            ? { backgroundColor: '#bde4ff' }
+                            : {}
+                        }
+                        key={`${item}${index}`}
+                        {...getItemProps({ item, index })}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                </ul>
               </div>
-              <div className="relative">
-                <div className="absolute">
-                  <input {...getInputProps()}  placeholder="France, London, New York..." className="w-[30vw] ml-3 p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md" />
-                  <ul {...getMenuProps()} style={menuStyles}>
-                    {isOpen &&
-                      inputItems.map((item, index) => (
-                        <li
-                          style={
-                            highlightedIndex === index
-                              ? { backgroundColor: '#bde4ff' }
-                              : {}
-                          }
-                          key={`${item}${index}`}
-                          {...getItemProps({ item, index })}
-                        >
-                          {item}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-                <div className="mt-16">
-                  <button
-                    type="button"
-                    aria-label="toggle menu"
-                    className='ml-3 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
-                  >
-                    Find a Talent
-                  </button>
-                  <span>
-                    {/* TODO: add href to the project new page */}
-                    <Link href="/">or Add a Project</Link>
-                  </span>
-                </div>
+              <div className="mt-16">
+                <button
+                  type="button"
+                  aria-label="toggle menu"
+                  className='ml-3 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+                  onClick={e => handleSubmit(e)}
+                >
+                  Find a Talent
+                </button>
+                <span>
+                  {/* TODO: add href to the project new page */}
+                  <Link href="/">or Add a Project</Link>
+                </span>
               </div>
             </div>
           </div>
-        </main>
-      </div>
-
-      <section>
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex">
-          <ul role="list" className="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {workers.map((worker) => (
-            <li
-              key={worker.email}
-              className="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200"
-            >
-              <div className="flex-1 flex flex-col p-8">
-                {/* <img className="wn-32 h-32 flex-shrink-0 mx-auto rounded-full" src={worker.imageUrl} alt="" /> */}
-                <Blockies
-                  className="w-32 h-32 flex-shrink-0 mx-auto rounded-full"
-                  seed={worker.wallet_address}
-                  size={12}
-                  scale={8}
-                />
-                <h3 className="mt-6 text-gray-900 text-sm font-medium">{worker.firstname}</h3>
-                <dl className="mt-1 flex-grow flex flex-col justify-between">
-                  <dt className="sr-only">Title</dt>
-                  <dd className="text-gray-500 text-sm">{worker.profile_headline}</dd>
-                  <dt className="sr-only">Skills</dt>
-                  <dd className="mt-3">
-                    {
-                      worker.skills.map((skill, index) => (
-                        <span key={index} className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium leading-5 bg-blue-100 text-blue-800 m-0.5">
-                          {skill}
-                        </span>
-                      ))
-                    }
-                  </dd>
-                </dl>
-              </div>
-              <div>
-                <div className="-mt-px flex divide-x divide-gray-200">
-                  <div className="w-0 flex-1 flex">
-                    <span
-                      className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
-                    >
-                      <CurrencyDollarIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      <span className="ml-3">{worker.rate}</span>
-                    </span>
-                  </div>
-                  <div className="-ml-px w-0 flex-1 flex">
-                    <span
-                      className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
-                    >
-                      <LocationMarkerIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                      <span className="ml-3">{worker.city}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-          </ul>
         </div>
-      </section>
+
+        <section>
+          <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex">
+            {
+              workers.length
+                ?
+                  <ul role="list" className="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {workers.map((worker) => (
+                      <li
+                        key={worker.email}
+                        className="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200"
+                      >
+                        <div className="flex-1 flex flex-col p-8">
+                          {/* <img className="wn-32 h-32 flex-shrink-0 mx-auto rounded-full" src={worker.imageUrl} alt="" /> */}
+                          <Blockies
+                            className="w-32 h-32 flex-shrink-0 mx-auto rounded-full"
+                            seed={worker.wallet_address}
+                            size={12}
+                            scale={8}
+                          />
+                          <h3 className="mt-6 text-gray-900 text-sm font-medium">{worker.firstname}</h3>
+                          <dl className="mt-1 flex-grow flex flex-col justify-between">
+                            <dt className="sr-only">Title</dt>
+                            <dd className="text-gray-500 text-sm">{worker.profile_headline}</dd>
+                            <dt className="sr-only">Skills</dt>
+                            <dd className="mt-3">
+                              {
+                                worker.skills.map((skill, index) => (
+                                  <span key={index} className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium leading-5 bg-blue-100 text-blue-800 m-0.5">
+                                    {skill}
+                                  </span>
+                                ))
+                              }
+                            </dd>
+                          </dl>
+                        </div>
+                        <div>
+                          <div className="-mt-px flex divide-x divide-gray-200">
+                            <div className="w-0 flex-1 flex">
+                              <span
+                                className="relative -mr-px w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-bl-lg hover:text-gray-500"
+                              >
+                                <CurrencyDollarIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                                <span className="ml-3">{worker.rate}</span>
+                              </span>
+                            </div>
+                            <div className="-ml-px w-0 flex-1 flex">
+                              <span
+                                className="relative w-0 flex-1 inline-flex items-center justify-center py-4 text-sm text-gray-700 font-medium border border-transparent rounded-br-lg hover:text-gray-500"
+                              >
+                                <LocationMarkerIcon className="w-5 h-5 text-gray-400" aria-hidden="true" />
+                                <span className="ml-3">{worker.city}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+                : <div>We did not found any Talents with this research</div>
+              }
+          </div>
+        </section>
+      </main>
 
       <hr />
       <footer className="max-w-7xl mx-auto py-4 px-2 sm:px-6 lg:px-8 text-xs text-gray-500 text-center">

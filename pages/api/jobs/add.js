@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-import { insertTalent } from '../../../lib/db/queries'
+import { insertJob } from '../../../lib/db/queries'
 
 export default async function handler(req, res) {
   const { method, body } = req
@@ -8,19 +8,9 @@ export default async function handler(req, res) {
   if (method !== 'POST') return res.status(405).json({ message: "Method not valid" })
 
   const { 
-    firstname,
-    lastname,
-    email,
-    telegram,
-    country,
-    city,
-    isRemoteOnly,
-    professionalXps,
-    profileHeadline,
-    linkedinUrl,
-    githubUrl,
-    stackoverflowUrl,
-    portfolioUrl,
+    title,
+    description,
+    skills,
     rate,
     walletAddress,
     signature
@@ -48,20 +38,9 @@ export default async function handler(req, res) {
       .status(401)
       .json({ message: 'Signature does not match the claimed address' })
 
-  await insertTalent({
-    firstname: firstname || '',
-    lastname: lastname || '',
-    email: email || '',
-    telegram: telegram || '',
-    country: country || '',
-    city: city || '',
-    isRemoteOnly: isRemoteOnly || false,
-    professionalXps: professionalXps || '',
-    profileHeadline: profileHeadline || '',
-    linkedinUrl: linkedinUrl || '',
-    githubUrl: githubUrl || '',
-    stackoverflowUrl: stackoverflowUrl || '',
-    portfolioUrl: portfolioUrl || '',
+  await insertJob({
+    title: title || '',
+    description: description || '',
     rate: rate || 0,
     walletAddress
   })

@@ -2,11 +2,18 @@ import Head from 'next/head' // TODO: add Head
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
+import { ethers } from 'ethers'
 import Multiselect from 'multiselect-react-dropdown'
 import { Disclosure } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import toast, { Toaster } from 'react-hot-toast'
 
 import useWeb3 from '../../lib/wallet/use-web3'
+import FeatureAbi from '../../constants/feature.json'
+
+const XDAI_ARBITRATOR_ADDRESS = "0x35d1f0cdae1d4c8e0ab88a5db4b0a8a3d1bafc7a"
+const XDAI_ARBITRATOR_EXTRADATA = "0x85"
+const XDAI_FEATURE_ADDRESS = "0x341Dac2C174b4f0c495be120dA6D27771dA18a36"
 
 const navigation = [
   { name: 'Talents', href: '#', current: true },
@@ -21,56 +28,20 @@ function classNames(...classes) {
 export default function Home() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [rate, setRate] = useState('')
+  const [amount, setAmount] = useState('0')
   const [skills, setSkills] = useState([])
   const [skillsFromDB, setSkillsFromDB] = useState([])
+  const [delayOffer, setDelayOffer] = useState('0')
+  const [challengeReward, setChallengeReward] = useState('0')
+  const [delayChallenge, setDelayChallenge] = useState(0)
+  const [arbitrator, setArbitrator] = useState('')
+  const [arbitratorExtraData, setArbitratorExtraData] = useState('')
 
   const {
     signer,
     connectedAddress,
     connectWallet
   } = useWeb3()
-
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault()
-
-    if (!connectedAddress) {
-      alert('Connect web3 wallet first to save your profile')
-
-      return
-    }
-
-    let rawSignature = ''
-
-    try {
-      rawSignature = await signer.signMessage(
-        "Proof of ownership of the profile"
-      )
-    } catch (error) {
-      alert('Error while requesting signature:', error)
-
-      return
-    }
-
-    // update profile
-    const { data } = await axios.post(`/api/jobs/add`, {
-      title,
-      description,
-      rate,
-      walletAddress: connectedAddress,
-      signature: rawSignature,
-      skills
-    })
-
-    if (data.msg === 'success') alert('Profile updated')
-  },
-  [
-    title,
-    description,
-    rate,
-    connectedAddress,
-    skills
-  ])
 
   useEffect(() => {
     (async () => {
@@ -90,7 +61,7 @@ export default function Home() {
   //   getJob(connectedAddress).then(({ data: talent }) => {
   //     setTitle(talent.title)
   //     setDescription(talent.lastname)
-  //     setRate(talent.rate)
+  //     setRate(talent.amount)
   //     const skillIds = talent.skills?.split(',')
 
   //     setSkills(
@@ -101,8 +72,113 @@ export default function Home() {
   //   })
   // }, [connectedAddress])
 
+  const handleSubmit = async (rawSignature) => {
+    // add job
+    const { data } = await axios.post(`/api/jobs/add`, {
+      title,
+      description,
+      amount,
+      walletAddress: connectedAddress,
+      signature: rawSignature,
+      skills
+    })
+
+    if (data.msg === 'success') {
+      toast.success('Job added')
+    }
+  }
+
+  const handleCreateTransaction = useCallback(
+    async () => {
+      if (!connectedAddress) {
+        alert('Connect web3 wallet first to save your profile')
+  
+        return
+      }
+
+      let rawSignature = ''
+
+      try {
+        rawSignature = await signer.signMessage(
+          "Proof of ownership of the profile"
+        )
+      } catch (error) {
+        alert('Error while requesting signature:', error)
+
+        return
+      }
+
+      const amountWEI = ethers.utils.parseEther(amount).toString()
+      const depositWEI = ethers.utils.parseEther(challengeReward).toString()
+
+      const hours = new Date().getHours()
+      const mins = new Date().getMinutes()
+      const seconds = new Date().getSeconds()
+
+      const timeoutPaymentNow = delayOffer.concat(` ${hours}:${mins}:${seconds}`)
+      const timeoutPaymentSeconds = Math.floor((new Date(timeoutPaymentNow).getTime() - Date.now()) / 1000)
+
+      // const claimTime = unitDelayTimeoutClaim
+      //   ? (Number(unitDelayTimeoutClaim) * 60).toString()  // minutes -> secondes
+      //   : (Number(timeoutClaim.value) * 60 * 60 * 24).toString()  // day -> secondes
+
+      // const paymentTime = unitDelayTimeoutPayment
+      //   ? (Number(unitDelayTimeoutPayment) * 60).toString()  // minutes -> secondes
+      //   : (timeoutPaymentSeconds).toString()  // calendar -> secondes
+
+      // if (paymentTime === '-1') {
+      //   alert("The payment time must be greater than today's date. Please check it.")
+
+      //   return
+      // }
+
+      try {
+        // add to DB then create transaction
+        const smartContractFeatureInstance = new ethers.Contract(
+          XDAI_FEATURE_ADDRESS,
+          FeatureAbi,
+          signer
+        )
+
+        const createTransactionTx = await smartContractFeatureInstance.createTransaction(
+          XDAI_ARBITRATOR_ADDRESS,
+          XDAI_ARBITRATOR_EXTRADATA,
+          delayOffer, 
+          challengeReward,
+          delayChallenge,
+          'newMetaEvidence',
+          {
+            value: amountWEI,
+          }
+        )
+
+        toast('Transaction broadcasting')
+
+        await createTransactionTx.wait()
+
+        toast.success('Transaction mined')
+
+        handleSubmit(rawSignature)
+      } catch (error) {
+        toast.error('Transaction rejected')
+
+        console.error(error)
+      }
+    }, [
+      signer,
+      delayOffer,
+      challengeReward,
+      delayChallenge,
+      amount,
+      arbitrator,
+      arbitratorExtraData
+    ]
+  )
+
+
   return (
     <div className="min-h-screen flex flex-col">
+      <Toaster />
       <Disclosure as="nav" className="bg-gray-800">
         {({ open }) => (
           <>
@@ -236,22 +312,107 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto py-2 px-4 sm:px-4 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Rate</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Amount</h2>
         </div>
 
         <div className="flex-1 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col">
             <div className="relative flex">
               <div className="absolute inset-y-0 left-3 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400">USD</span>
+                <span className="text-gray-400">XDAI</span>
               </div>
               <input
-                id="rate"
-                placeholder="Add your rate"
+                id="amount"
+                placeholder="Add your amount"
                 type="number"
                 className="w-[30vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
-                onChange={(e) => setRate(e.target.value)}
-                value={rate}
+                onChange={(e) => setAmount(e.target.value)}
+                value={amount}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto py-2 px-4 sm:px-4 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900">Parameters</h2>
+        </div>
+
+        <div className="flex-1 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col">
+            <label className="pl-4 pb-1">Delay Offer</label>
+            <div className="relative flex">
+              <div className="absolute inset-y-0 left-3 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">Days</span>
+              </div>
+              <input
+                id="delayOffer"
+                placeholder="Delay Offer"
+                type="number"
+                className="w-[30vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setDelayOffer(e.target.value)}
+                value={delayOffer}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="pl-4 pb-1 pt-4">Challenge Reward</label>
+            <div className="relative flex">
+              <div className="absolute inset-y-0 left-3 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">XDAI</span>
+              </div>
+              <input
+                id="challengeReward"
+                placeholder="Challenge Reward"
+                type="number"
+                className="w-[30vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setChallengeReward(e.target.value)}
+                value={challengeReward}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="pl-4 pb-1 pt-4">Delay Challenge</label>
+            <div className="relative flex">
+              <div className="absolute inset-y-0 left-3 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">Days</span>
+              </div>
+              <input
+                id="delayChallenge"
+                placeholder="Delay Challenge"
+                type="number"
+                className="w-[30vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setDelayChallenge(e.target.value)}
+                value={delayChallenge}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="pl-4 pb-1 pt-4">Arbitrator</label>
+            <div className="relative flex">
+              <input
+                id="arbitrator"
+                placeholder="Arbitrator"
+                type="text"
+                className="w-[30vw] ml-[1vw] p-2 pl-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setArbitrator(e.target.value)}
+                value={arbitrator || XDAI_ARBITRATOR_ADDRESS}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="pl-4 pb-1 pt-4">Arbitrator ExtraData</label>
+            <div className="relative flex">
+              <input
+                id="arbitratorExtraData"
+                placeholder="Arbitrator ExtraData"
+                type="text"
+                className="w-[30vw] ml-[1vw] p-2 pl-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                onChange={(e) => setArbitratorExtraData(e.target.value)}
+                value={arbitratorExtraData || XDAI_ARBITRATOR_EXTRADATA}
               />
             </div>
           </div>
@@ -263,7 +424,7 @@ export default function Home() {
               className={
                 'bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded-md text-sm font-medium'
               }
-              onClick={e => handleSubmit(e)}
+              onClick={e => handleCreateTransaction(e)}
             >
               Save Job
             </button>

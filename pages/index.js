@@ -11,8 +11,8 @@ import { menuStyles } from '../lib/utils'
 import useWeb3 from '../lib/wallet/use-web3'
 
 const navigation = [
-  { name: 'Talents', href: '#', current: true },
-  { name: 'Jobs', href: '#', current: false },
+  { name: 'Talents', href: '/', current: true },
+  { name: 'Jobs', href: '/jobs', current: false },
   { name: 'About', href: '#', current: false }
 ]
 
@@ -216,7 +216,7 @@ console.log(`/api/talents${ (skills || location) ? `?${skills ? `skills=${skills
                 </button>
                 <span>
                   {/* TODO: add href to the project new page */}
-                  <Link href="/">or Add a Project</Link>
+                  or <u className="underline"><Link className="underline" href="/jobs/add">Add a Project</Link></u>
                 </span>
               </div>
             </div>

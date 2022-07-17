@@ -14,8 +14,8 @@ const XDAI_ARBITRATOR_EXTRADATA = "0x85"
 const XDAI_FEATURE_ADDRESS = "0x341Dac2C174b4f0c495be120dA6D27771dA18a36"
 
 const navigation = [
-  { name: 'Talents', href: '#', current: true },
-  { name: 'Jobs', href: '#', current: false },
+  { name: 'Talents', href: '/', current: true },
+  { name: 'Jobs', href: '/jobs', current: false },
   { name: 'About', href: '#', current: false }
 ]
 
@@ -120,7 +120,6 @@ export default function Jobs() {
         </div>
       </header>
 
-      
       <main>
         <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex">
           {

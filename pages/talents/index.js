@@ -9,8 +9,8 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import useWeb3 from '../../lib/wallet/use-web3'
 
 const navigation = [
-  { name: 'Talents', href: '#', current: true },
-  { name: 'Jobs', href: '#', current: false },
+  { name: 'Talents', href: '/', current: true },
+  { name: 'Jobs', href: '/jobs', current: false },
   { name: 'About', href: '#', current: false }
 ]
 

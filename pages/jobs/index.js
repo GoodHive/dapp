@@ -2,7 +2,7 @@
 
 import Head from 'next/head' // TODO: add Head
 import Link from 'next/link'
-import { useState, useEffect, useCallback } from 'react'
+import { Fragment, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { Disclosure } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
@@ -24,15 +24,31 @@ function classNames(...classes) {
 }
 
 export default function Jobs() {
-  const [jobs, setJobs] = useState([])
+  const [jobsByCompanyAddress, setJobsByCompanyAddress] = useState([])
 
   useEffect(() => {
     (async () => {
       const { data } = await axios.get(`/api/jobs`)
 
-      setJobs(data)
+      setJobsByCompanyAddress(data)
     })()
   }, [])
+
+
+  const locations = [
+    {
+      name: 'Edinburgh',
+      people: [
+        { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
+        { name: 'Courtney Henry', title: 'Designer', email: 'courtney.henry@example.com', role: 'Admin' },
+      ],
+    },
+    // More people...
+  ]
+
+  function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -121,21 +137,113 @@ export default function Jobs() {
       </header>
 
       <main>
-        <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex">
-          {
-            jobs.length  ?
-              <ul role="list" className="flex-1 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {jobs.map((job) => (
-                  <li
-                    key={job.title}
-                    className="col-span-1 flex flex-col text-center bg-white rounded-lg shadow divide-y divide-gray-200 p-9"
-                  >
-                    {job.title}
-                  </li>
-                ))}
-              </ul>
-            : <div>We did not found any jobs</div>
-          }
+        <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex flex-col">
+          <div className="sm:flex sm:items-center">
+            <div className="sm:flex-auto">
+              <p className="mt-2 text-sm text-gray-700">
+                A list of all the jobs by company addresses or Ethereum Name Services.
+              </p>
+            </div>
+            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                onClick={() => window.location.href = '/jobs/add'} // use router to redirect to the add job page
+              >
+                Add Job
+              </button>
+            </div>
+          </div>
+          <div className="mt-8 flex flex-col">
+            <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <table className="min-w-full">
+                    <thead className="bg-white">
+                      <tr>
+                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                          Date
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          Title
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          Description
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          Claim
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white">
+                      {jobsByCompanyAddress.map((job, index) => ( // companies - alias address i.e ENS name
+                        <Fragment key={index}>
+                          <tr className="border-t border-gray-200">
+                            <th
+                              colSpan={4}
+                              scope="colgroup"
+                              className="bg-gray-50 px-4 py-2 text-left text-sm font-semibold text-gray-900 sm:px-6"
+                            >
+                              {job[0]["company_wallet_address"]}
+                            </th>
+                          </tr>
+                          {console.log(job)}
+                          {job.map((job, index) => (
+                            <tr
+                              key={index}
+                              className={classNames(index === 0 ? 'border-gray-300' : 'border-gray-200', 'border-t')}
+                            >
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                {job.created_at || 'n/a'}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.title}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.description}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                                  Claim
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))}
+                      {/* {locations.map((location) => (
+                        <Fragment key={location.name}>
+                          <tr className="border-t border-gray-200">
+                            <th
+                              colSpan={5}
+                              scope="colgroup"
+                              className="bg-gray-50 px-4 py-2 text-left text-sm font-semibold text-gray-900 sm:px-6"
+                            >
+                              {location.name}
+                            </th>
+                          </tr>
+                          {location.people.map((person, personIdx) => (
+                            <tr
+                              key={person.email}
+                              className={classNames(personIdx === 0 ? 'border-gray-300' : 'border-gray-200', 'border-t')}
+                            >
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                {person.name}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.title}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.email}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.role}</td>
+                              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                                  Edit<span className="sr-only">, {person.name}</span>
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))} */}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 

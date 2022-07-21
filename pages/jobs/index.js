@@ -8,6 +8,8 @@ import { Disclosure } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import toast, { Toaster } from 'react-hot-toast'
 
+import useWeb3 from '../../lib/wallet/use-web3'
+import FeatureAbi from '../../constants/feature.json'
 
 const XDAI_ARBITRATOR_ADDRESS = "0x35d1f0cdae1d4c8e0ab88a5db4b0a8a3d1bafc7a"
 const XDAI_ARBITRATOR_EXTRADATA = "0x85"
@@ -26,6 +28,12 @@ function classNames(...classes) {
 export default function Jobs() {
   const [jobsByCompanyAddress, setJobsByCompanyAddress] = useState([])
 
+  const {
+    signer,
+    connectedAddress,
+    connectWallet
+  } = useWeb3()
+
   useEffect(() => {
     (async () => {
       const { data } = await axios.get(`/api/jobs`)
@@ -34,17 +42,62 @@ export default function Jobs() {
     })()
   }, [])
 
+  const handleCreateTransaction = (jobId) => useCallback(
+    async () => {
+      if (!connectedAddress) {
+        alert('Connect web3 wallet first to save your profile')
+  
+        return
+      }
 
-  const locations = [
-    {
-      name: 'Edinburgh',
-      people: [
-        { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-        { name: 'Courtney Henry', title: 'Designer', email: 'courtney.henry@example.com', role: 'Admin' },
-      ],
-    },
-    // More people...
-  ]
+      let rawSignature = ''
+
+      try {
+        rawSignature = await signer.signMessage(
+          "Proof of ownership of the profile"
+        )
+      } catch (error) {
+        alert('Error while requesting signature:', error)
+
+        return
+      }
+
+      try {
+        // add to DB then create transaction
+        const smartContractFeatureInstance = new ethers.Contract(
+          XDAI_FEATURE_ADDRESS,
+          FeatureAbi,
+          signer
+        )
+
+        // get price of the claim
+        // const depositWEI = await smartContractFeatureInstance.getClaimPrice()
+        // const arbitratorAddress = await smartContractFeatureInstance.arbitrator()
+        // const arbitrationFee = await smartContractFeatureInstance.arbitrator()
+
+        const createTransactionTx = await smartContractFeatureInstance.claim(
+          jobId,
+          {
+            value: amountWEI,
+          }
+        )
+
+        toast('Transaction broadcasting')
+
+        await createTransactionTx.wait()
+
+        toast.success('Transaction mined')
+
+        handleSubmit(rawSignature)
+      } catch (error) {
+        toast.error('Transaction rejected')
+
+        console.error(error)
+      }
+    }, [
+      signer
+    ]
+  )
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -187,7 +240,6 @@ export default function Jobs() {
                               {job[0]["company_wallet_address"]}
                             </th>
                           </tr>
-                          {console.log(job)}
                           {job.map((job, index) => (
                             <tr
                               key={index}
@@ -207,37 +259,6 @@ export default function Jobs() {
                           ))}
                         </Fragment>
                       ))}
-                      {/* {locations.map((location) => (
-                        <Fragment key={location.name}>
-                          <tr className="border-t border-gray-200">
-                            <th
-                              colSpan={5}
-                              scope="colgroup"
-                              className="bg-gray-50 px-4 py-2 text-left text-sm font-semibold text-gray-900 sm:px-6"
-                            >
-                              {location.name}
-                            </th>
-                          </tr>
-                          {location.people.map((person, personIdx) => (
-                            <tr
-                              key={person.email}
-                              className={classNames(personIdx === 0 ? 'border-gray-300' : 'border-gray-200', 'border-t')}
-                            >
-                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                {person.name}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.title}</td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.email}</td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{person.role}</td>
-                              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                                  Edit<span className="sr-only">, {person.name}</span>
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </Fragment>
-                      ))} */}
                     </tbody>
                   </table>
                 </div>

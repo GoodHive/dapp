@@ -126,6 +126,12 @@ export default function Add() {
           signer
         )
 
+        if(amountWEI <= 0) {
+          alert('Amount must be greater than 0')
+
+          return
+        }
+
         const createTransactionTx = await smartContractFeatureInstance.createTransaction(
           XDAI_ARBITRATOR_ADDRESS,
           XDAI_ARBITRATOR_EXTRADATA,
@@ -140,11 +146,13 @@ export default function Add() {
 
         toast('Transaction broadcasting')
 
-        await createTransactionTx.wait()
+        const resultTransaction = await createTransactionTx.wait()
 
-        toast.success('Transaction mined')
+        if (resultTransaction.confirmations > 0) {
+          handleSubmit(rawSignature)
 
-        handleSubmit(rawSignature)
+          toast.success('Transaction mined')
+        }
       } catch (error) {
         toast.error('Transaction rejected')
 

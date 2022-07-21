@@ -10,6 +10,7 @@ import toast, { Toaster } from 'react-hot-toast'
 
 import useWeb3 from '../../lib/wallet/use-web3'
 import FeatureAbi from '../../constants/feature.json'
+import { ethers } from 'ethers'
 
 const XDAI_ARBITRATOR_ADDRESS = "0x35d1f0cdae1d4c8e0ab88a5db4b0a8a3d1bafc7a"
 const XDAI_ARBITRATOR_EXTRADATA = "0x85"
@@ -42,7 +43,7 @@ export default function Jobs() {
     })()
   }, [])
 
-  const handleCreateTransaction = (jobId) => useCallback(
+  const handleCreateClaim = (jobId) => useCallback(
     async () => {
       if (!connectedAddress) {
         alert('Connect web3 wallet first to save your profile')
@@ -71,9 +72,13 @@ export default function Jobs() {
         )
 
         // get price of the claim
-        // const depositWEI = await smartContractFeatureInstance.getClaimPrice()
-        // const arbitratorAddress = await smartContractFeatureInstance.arbitrator()
-        // const arbitrationFee = await smartContractFeatureInstance.arbitrator()
+        const depositWEI = (await smartContractFeatureInstance.transactions(jobId)).deposit
+
+        console.log('depositWEI', depositWEI)
+
+        const arbitrationFee = 5000000000000000
+
+        const claimPrice = ethers.BigNumber.from(arbitrationFee)
 
         const createTransactionTx = await smartContractFeatureInstance.claim(
           jobId,
@@ -246,12 +251,12 @@ export default function Jobs() {
                               className={classNames(index === 0 ? 'border-gray-300' : 'border-gray-200', 'border-t')}
                             >
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                {job.created_at || 'n/a'}
+                                {(new Date(job.created_at)).toLocaleDateString() || 'n/a'}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.title}</td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.description}</td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                                <a href="#" onClick={() => handleCreateClaim()} className="text-indigo-600 hover:text-indigo-900">
                                   Claim
                                 </a>
                               </td>

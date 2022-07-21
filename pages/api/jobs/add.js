@@ -12,6 +12,7 @@ export default async function handler(req, res) {
     description,
     skills,
     rate,
+    transactionId,
     walletAddress,
     signature
   } = body
@@ -42,7 +43,8 @@ export default async function handler(req, res) {
     title: title || '',
     description: description || '',
     rate: rate || 0,
-    walletAddress
+    transactionId: transactionId || 0,
+    walletAddress,
   })
 
   res.status(200).json({ msg: 'success' })

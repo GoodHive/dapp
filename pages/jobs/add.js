@@ -72,12 +72,14 @@ export default function Add() {
   //   })
   // }, [connectedAddress])
 
-  const handleSubmit = async (rawSignature) => {
+  // TODO: Must update the state when the user changes the value
+  const handleSubmit = async (rawSignature, transactionId) => {
     // add job
     const { data } = await axios.post(`/api/jobs/add`, {
       title,
       description,
       amount,
+      transactionId,
       walletAddress: connectedAddress,
       signature: rawSignature,
       skills
@@ -149,9 +151,11 @@ export default function Add() {
         const resultTransaction = await createTransactionTx.wait()
 
         if (resultTransaction.confirmations > 0) {
-          handleSubmit(rawSignature)
-
           toast.success('Transaction mined')
+          // get transaction id
+          const jobId = parseInt(resultTransaction.logs[0].topics[1].substring(2), 16)
+
+          await handleSubmit(rawSignature, jobId)
         }
       } catch (error) {
         toast.error('Transaction rejected')

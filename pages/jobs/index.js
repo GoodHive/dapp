@@ -74,8 +74,6 @@ export default function Jobs() {
         // get price of the claim
         const depositWEI = (await smartContractFeatureInstance.transactions(jobId)).deposit
 
-        console.log('depositWEI', depositWEI)
-
         const arbitrationFee = 5000000000000000
 
         const claimPrice = ethers.BigNumber.from(arbitrationFee).add(depositWEI)

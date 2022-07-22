@@ -267,7 +267,7 @@ export default function Home() {
                   id="firstname"
                   name="firstname"
                   placeholder="Firstname"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setFirstname(e.target.value)}
                   value={firstname}
                 />
@@ -277,7 +277,7 @@ export default function Home() {
                   id="lastname"
                   name="lastname"
                   placeholder="Lastname"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setLastname(e.target.value)}
                   value={lastname}
                 />
@@ -289,7 +289,7 @@ export default function Home() {
                   id="country"
                   name="country"
                   placeholder="Country"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setCountry(e.target.value)}
                   value={country}
                 />
@@ -299,7 +299,7 @@ export default function Home() {
                   id="city"
                   name="city"
                   placeholder="City"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setCity(e.target.value)}
                   value={city}
                 />
@@ -312,7 +312,7 @@ export default function Home() {
                   name="email"
                   placeholder="Email"
                   type="email"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setEmail(e.target.value)}
                   value={email}
                 />
@@ -322,7 +322,7 @@ export default function Home() {
                   id="telegram"
                   name="telegram"
                   placeholder="Telegram"
-                  className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                  className="w-[42vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                   onChange={(e) => setTelegram(e.target.value)}
                   value={telegram}
                 />
@@ -384,7 +384,7 @@ export default function Home() {
               name="linkedinUrl"
               placeholder="Linkedin Url"
               type="text"
-              className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+              className="w-[60vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
               onChange={(e) => setLinkedinUrl(e.target.value)}
               value={linkedinUrl}
             />
@@ -394,7 +394,7 @@ export default function Home() {
               id="githubUrl"
               name="githubUrl"
               placeholder="Github Url"
-              className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+              className="w-[60vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
               onChange={(e) => setGithubUrl(e.target.value)}
               value={githubUrl}
             />
@@ -404,7 +404,7 @@ export default function Home() {
               id="stackoverflowUrl"
               name="stackoverflowUrl"
               placeholder="Stackoverflow Url"
-              className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+              className="w-[60vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
               onChange={(e) => setStackoverflowUrl(e.target.value)}
               value={stackoverflowUrl}
             />
@@ -414,7 +414,7 @@ export default function Home() {
               id="portfolioUrl"
               name="portfolioUrl"
               placeholder="Portfolio Url"
-              className="w-[30vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+              className="w-[60vw] ml-[1vw] p-2 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
               onChange={(e) => setPortfolioUrl(e.target.value)}
               value={portfolioUrl}
             />
@@ -436,7 +436,7 @@ export default function Home() {
                 id="rate"
                 placeholder="Add your rate"
                 type="number"
-                className="w-[30vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
+                className="w-[60vw] ml-[1vw] p-2 pl-12 focus:ring-indigo-500 focus:border-indigo-500 border-gray-500 shadow rounded-md"
                 onChange={(e) => setRate(e.target.value)}
                 value={rate}
               />

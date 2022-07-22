@@ -13,7 +13,7 @@ import useWeb3 from '../lib/wallet/use-web3'
 const navigation = [
   { name: 'Talents', href: '/', current: true },
   { name: 'Jobs', href: '/jobs', current: false },
-  { name: 'About', href: '#', current: false }
+  { name: 'Profile', href: '/talents', current: false }
 ]
 
 function classNames(...classes) {

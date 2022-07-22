@@ -19,7 +19,7 @@ const XDAI_FEATURE_ADDRESS = "0x341Dac2C174b4f0c495be120dA6D27771dA18a36"
 const navigation = [
   { name: 'Talents', href: '/', current: true },
   { name: 'Jobs', href: '/jobs', current: false },
-  { name: 'About', href: '#', current: false }
+  { name: 'Profile', href: '/talents', current: false }
 ]
 
 function classNames(...classes) {

@@ -9,9 +9,9 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import useWeb3 from '../../lib/wallet/use-web3'
 
 const navigation = [
-  { name: 'Talents', href: '/', current: true },
+  { name: 'Talents', href: '/', current: false },
   { name: 'Jobs', href: '/jobs', current: false },
-  { name: 'About', href: '#', current: false }
+  { name: 'Profile', href: '/talents', current: true }
 ]
 
 function classNames(...classes) {

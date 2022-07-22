@@ -43,8 +43,8 @@ export default function Jobs() {
     })()
   }, [])
 
-  const handleCreateClaim = (jobId) => useCallback(
-    async () => {
+  const handleCreateClaim = useCallback(
+    async (jobId) => {
       if (!connectedAddress) {
         alert('Connect web3 wallet first to save your profile')
   
@@ -78,22 +78,25 @@ export default function Jobs() {
 
         const arbitrationFee = 5000000000000000
 
-        const claimPrice = ethers.BigNumber.from(arbitrationFee)
+        const claimPrice = ethers.BigNumber.from(arbitrationFee).add(depositWEI)
 
         const createTransactionTx = await smartContractFeatureInstance.claim(
           jobId,
           {
-            value: amountWEI,
+            value: claimPrice,
           }
         )
 
         toast('Transaction broadcasting')
 
-        await createTransactionTx.wait()
+        const resultTransaction = await createTransactionTx.wait()
 
         toast.success('Transaction mined')
+        toast.success('Claim saved')
 
-        handleSubmit(rawSignature)
+        if (resultTransaction.confirmations > 0) {
+          // TODO: add to DB
+        }
       } catch (error) {
         toast.error('Transaction rejected')
 
@@ -157,10 +160,9 @@ export default function Jobs() {
                     className={
                       'bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded-md text-sm font-medium'
                     }
-                    // onClick={connectWallet}
+                    onClick={connectWallet}
                   >
-                    Connect to Web3
-                    {/* { connectedAddress ? connectedAddress : 'Connect to Web3' } */}
+                    { connectedAddress ? connectedAddress : 'Connect to Web3' }
                   </button>
                 </div>
               </div>
@@ -256,7 +258,7 @@ export default function Jobs() {
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.title}</td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{job.description}</td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                <a href="#" onClick={() => handleCreateClaim()} className="text-indigo-600 hover:text-indigo-900">
+                                <a href="#" onClick={() => handleCreateClaim(job.transaction_id)} className="text-indigo-600 hover:text-indigo-900">
                                   Claim
                                 </a>
                               </td>
